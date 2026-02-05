@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine? 💖</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Parisienne&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            height: 100vh;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Dancing Script', cursive;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+        .container {
+            z-index: 10;
+            max-width: 700px;
+            padding: 40px;
+            animation: fadeInUp 2s ease-out;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8);
+        }
+        h1 {
+            font-size: 4em;
+            font-family: 'Great Vibes', cursive;
+            margin-bottom: 30px;
+            animation: glowPulse 2s ease-in-out infinite alternate;
+            background: linear-gradient(45deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .pickup-line {
+            font-size: 2.2em;
+            opacity: 0;
+            transform: translateY(60px) scale(0.8);
+            transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            margin: 35px 0;
+            position: relative;
+            font-family: 'Parisienne', cursive;
+        }
+        .pickup-line.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        .pickup-line::before {
+            content: '💕';
+            position: absolute;
+            left: -50px;
+            top: 0;
+            font-size: 1.5em;
+            animation: bounce 1s infinite;
+        }
+        .valentine-ask {
+            font-size: 3em;
+            opacity: 0;
+            transform: scale(0.3) rotate(-10deg);
+            transition: all 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin-top: 50px;
+            font-family: 'Dancing Script', cursive;
+            font-weight: 700;
+        }
+        .valentine-ask.show {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        .yes-btn {
+            background: linear-gradient(45deg, #ff6b9d, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.8em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.4s ease;
+            font-family: 'Dancing Script', cursive;
+            box-shadow: 0 10px 30px rgba(255,107,157,0.4);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .yes-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255,107,157,0.6);
+        }
+        .hearts-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .heart-bg {
+            position: absolute;
+            color: rgba(255,255,255,0.6);
+            font-size: 24px;
+            animation: floatHeart 8s infinite linear;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } }
+        @keyframes glowPulse {
+            from { filter: drop-shadow(0 0 20px #fff); }
+            to { filter: drop-shadow(0 0 40px #ffd700); }
+        }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+        @keyframes floatHeart {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        #confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="hearts-bg" id="heartsBg"></div>
+    
+    <div class="container">
+        <h1>Hey My Love 💖</h1>
+        
+        <div id="line1" class="pickup-line">I will always be your ethanol and you will always be mine.</div>
+        <div id="line2" class="pickup-line">You are the best thing that has ever happened to me.</div>
+        <div id="line3" class="pickup-line">So I was wondering ifffff...</div>
+        
+        <div id="ask" class="valentine-ask">
+            Will you be my Valentine forever? 🌹<br>
+            <button class="yes-btn" onclick="celebrate()">YES! I do! 😍💍</button>
+        </div>
+    </div>
+
+    <!-- Background music -->
+    <iframe src="https://www.youtube.com/embed/Sc0a2XvW52o?autoplay=1&mute=1&loop=1&playlist=Sc0a2XvW52o" 
+            style="position:fixed; top:-9999px; left:-9999px;" frameborder="0" allow="autoplay"></iframe>
+
+    <div id="confetti"></div>
+
+    <script>
+        // Advanced floating hearts with mouse follow (inspired by pro animations)
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let hearts = [];
+        let mouse = { x: 0, y: 0 };
+
+        class Heart {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 100;
+                this.size = Math.random() * 20 + 10;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * -3 - 1;
+                this.opacity = 0;
+                this.vx = 0;
+                this.vy = 0;
+            }
+            update() {
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 100) {
+                    this.vx += dx * 0.01;
+                    this.vy += dy * 0.01;
+                }
+                this.x += this.speedX + this.vx * 0.2;
+                this.y += this.speedY + this.vy * 0.2;
+                this.opacity += 0.02;
+                this.vx *= 0.95;
+                this.vy *= 0.95;
+                if (this.y < 0) this.y = canvas.height + 100;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = '#ff69b4';
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText('💖', this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (hearts.length < 50) hearts.push(new Heart());
+            hearts.forEach((heart, i) => {
+                heart.update();
+                heart.draw();
+                if (heart.opacity > 1) hearts.splice(i, 1);
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        document.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        // Sequence reveal
+        setTimeout(() => document.getElementById('line1').classList.add('show'), 1500);
+        setTimeout(() => document.getElementById('line2').classList.add('show'), 3500);
+        setTimeout(() => document.getElementById('line3').classList.add('show'), 5500);
+        setTimeout(() => document.getElementById('ask').classList.add('show'), 7500);
+
+        // Background hearts
+        function createBgHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = '💕';
+            heart.className = 'heart-bg';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.animationDuration = (Math.random() * 5 + 6) + 's';
+            document.getElementById('heartsBg').appendChild(heart);
+            setTimeout(() => heart.remove(), 11000);
+        }
+        setInterval(createBgHeart, 400);
+
+        // Epic celebration with confetti
+        function celebrate() {
+            document.body.style.background = '#ff1493';
+            const confetti = document.getElementById('confetti');
+            for (let i = 0; i < 100; i++) {
+                const c = document.createElement('div');
+                c.style.cssText = `
+                    position: absolute;
+                    width: 10px; height: 10px;
+                    background: ${['#ff69b4', '#ffd700', '#ff4757', '#00ff88'][Math.floor(Math.random()*4)]};
+                    left: ${Math.random()*100}vw;
+                    animation: confettiFall ${Math.random()*3+2}s linear forwards;
+                    transform: rotate(${Math.random()*360}deg);
+                `;
+                confetti.appendChild(c);
+                setTimeout(() => c.remove(), 5000);
+            }
+            document.querySelector('.container').innerHTML = `
+                <h1 style="font-size:5em; animation: bounce 0.5s infinite;">YASSS! Forever Mine! 💖💍✨</h1>
+                <p style="font-size:2em;">I love you more than words... Click to replay ❤️</p>
+            `;
+            document.body.onc
